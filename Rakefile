@@ -1,7 +1,10 @@
 desc "Runs the specs [EMPTY]"
 task :spec do
   # Provide your own implementation
-  puts  "Hello " + current_deployed_version.to_s()
+  puts "The current released version of your pod is " + current_released_version
+  print "Enter the version you want to release (" + suggested_version + ") "
+  new_version = $stdin.gets.strip
+  puts "The new version is " + new_version
 end
 
 desc "Release a new version of the Pod"
@@ -64,13 +67,25 @@ def podspec_path
   end
 end
 
-def current_deployed_version
-  diff_version_line = `git diff *.podspec | grep \'\\-  s.version\'`.strip.split("\n")
-  if diff_version_line.count == 0
-    spec_version
+def current_released_version
+  diff_version_lines = `git diff origin/master master *.podspec | grep \'\\-  s.version\'`.strip.split("\n")
+  if diff_version_lines.count == 0
+    spec_version.to_s()
   else
-    remote_version = diff_version_line.split(` = `)[1]
+    diff_version_line = diff_version_lines.first
+    remote_version = diff_version_line.split("=").last.strip.gsub("\"","").gsub("\'","")
     remote_version
+  end
+end
+
+def suggested_version
+  if spec_version != current_released_version
+    spec_version.to_s()
+  else
+    puts 'wooooot'
+    version_components = spec_version.to_s().split(".");
+    version_components.last = (version_components.last.to_i() + 1).to_s
+    version_components.join(".")
   end
 end
 
