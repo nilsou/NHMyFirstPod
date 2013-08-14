@@ -1,6 +1,7 @@
 desc "Runs the specs [EMPTY]"
 task :spec do
   # Provide your own implementation
+  puts  "Hello " + current_deployed_version.to_s()
 end
 
 desc "Release a new version of the Pod"
@@ -62,4 +63,15 @@ def podspec_path
     raise "Could not select a podspec"
   end
 end
+
+def current_deployed_version
+  diff_version_line = `git diff *.podspec | grep \'\\-  s.version\'`.strip.split("\n")
+  if diff_version_line.count == 0
+    spec_version
+  else
+    remote_version = diff_version_line.split(` = `)[1]
+    remote_version
+  end
+end
+
 
